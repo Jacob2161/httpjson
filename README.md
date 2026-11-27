@@ -22,8 +22,10 @@ if err := httpjson.ReadRequest(req, 1<<20, &request); err != nil {
 _ = httpjson.Write(w, http.StatusCreated, response)
 ```
 
-- The body is bounded, unknown fields are refused, and the whole body is read: trailing bytes or a second value are an error, not silently ignored.
-- A read failure after the value (a body past the limit, a slow client) is reported as itself, not as a second value.
+- The body is bounded, unknown fields are refused, and the whole body is read: trailing bytes or a
+  second value are an error, not silently ignored.
+- A read failure after the value (a body past the limit, a slow client) is reported as itself, not
+  as a second value.
 - Mapping errors to your API's error responses is left to you.
 
 Tested on the two newest Go releases. Licensed under the MIT license.

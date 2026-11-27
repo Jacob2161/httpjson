@@ -63,18 +63,19 @@ type errorRecorder struct {
 
 func (r *errorRecorder) Read(target []byte) (int, error) {
 	n, err := r.reader.Read(target)
-	if err != nil && err != io.EOF && r.err == nil {
+	if err != nil && !errors.Is(err, io.EOF) && r.err == nil {
 		r.err = err
 	}
 	return n, err
 }
 
-// Write writes value as a JSON response with status, or with the status the
-// response holds already (200 unless set) when status is 0. value is encoded
-// before anything is sent, so a value that cannot be encoded returns its
-// error with the response still unwritten, free for an error response.
-func Write(w http.ResponseWriter, status int, value any) error {
-	encoded, err := json.Marshal(value)
+// Write writes response as a JSON response body with status, or with the
+// status the response writer holds already (200 unless set) when status is
+// 0. response is encoded before anything is sent, so one that cannot be
+// encoded returns its error with the response still unwritten, free for an
+// error response.
+func Write(w http.ResponseWriter, status int, response any) error {
+	encoded, err := json.Marshal(response)
 	if err != nil {
 		return err
 	}

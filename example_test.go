@@ -30,7 +30,10 @@ func handleCreateUser(w http.ResponseWriter, req *http.Request) {
 func Example() {
 	for _, body := range []string{`{"name":"ada"}`, `{"name":"ada","admin":true}`} {
 		recorder := httptest.NewRecorder()
-		handleCreateUser(recorder, httptest.NewRequest(http.MethodPost, "/users", strings.NewReader(body)))
+		handleCreateUser(
+			recorder,
+			httptest.NewRequest(http.MethodPost, "/users", strings.NewReader(body)),
+		)
 		fmt.Print(recorder.Code, " ", recorder.Body.String())
 	}
 	// Output:
