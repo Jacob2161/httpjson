@@ -36,8 +36,8 @@ func TestReadRequest(t *testing.T) {
 			wantText: "nil",
 		},
 		{
-			name: "second value",
-			body: `{"name":"first"}{"name":"second"}`,
+			name:     "second value",
+			body:     `{"name":"first"}{"name":"second"}`,
 			want:     isError(ErrSecondValue),
 			wantText: "ErrSecondValue",
 		},
@@ -48,8 +48,8 @@ func TestReadRequest(t *testing.T) {
 			wantText: "ErrSecondValue",
 		},
 		{
-			name: "oversized suffix",
-			body: `{"name":"first"}` + strings.Repeat(" ", limit),
+			name:     "oversized suffix",
+			body:     `{"name":"first"}` + strings.Repeat(" ", limit),
 			want:     isTooLarge,
 			wantText: "an *http.MaxBytesError",
 		},
