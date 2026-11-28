@@ -3,6 +3,11 @@
 This module follows semantic versioning. Before v1, a minor version may
 change the API; each such change says what callers must do.
 
+## v0.2.1 (2026-11-28)
+
+- The example names the field at fault instead of printing the decoder's
+  message, which changes between Go releases. No API change.
+
 ## v0.2.0 (2026-11-28)
 
 - Requires Go 1.27, the newest Go release; Go 1.26 is no longer

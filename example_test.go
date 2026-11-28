@@ -1,6 +1,7 @@
 package httpjson_test
 
 import (
+	json "encoding/json/v2"
 	"errors"
 	"fmt"
 	"net/http"
@@ -18,10 +19,18 @@ func handleCreateUser(w http.ResponseWriter, req *http.Request) {
 	var request createUser
 	if err := httpjson.ReadRequest(req, 1<<20, &request); err != nil {
 		status := http.StatusBadRequest
-		if _, tooLarge := errors.AsType[*http.MaxBytesError](err); tooLarge {
+		_, tooLarge := errors.AsType[*http.MaxBytesError](err)
+		if tooLarge {
 			status = http.StatusRequestEntityTooLarge
 		}
-		_ = httpjson.Write(w, status, map[string]string{"error": err.Error()})
+		// The decoder's message changes between Go releases; the field at
+		// fault does not.
+		body := map[string]string{"error": "invalid request"}
+		semantic, isSemantic := errors.AsType[*json.SemanticError](err)
+		if isSemantic {
+			body["field"] = string(semantic.JSONPointer)
+		}
+		_ = httpjson.Write(w, status, body)
 		return
 	}
 	_ = httpjson.Write(w, http.StatusCreated, map[string]string{"name": request.Name})
@@ -38,5 +47,5 @@ func Example() {
 	}
 	// Output:
 	// 201 {"name":"ada"}
-	// 400 {"error":"json: cannot unmarshal JSON string into Go httpjson_test.createUser: unknown object member name \"admin\""}
+	// 400 {"error":"invalid request","field":"/admin"}
 }
