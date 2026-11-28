@@ -3,6 +3,12 @@
 This module follows semantic versioning. Before v1, a minor version may
 change the API; each such change says what callers must do.
 
+## v0.2.2 (2026-11-28)
+
+- The README shows a tagged field and the encoding/json/v2 errors, and says
+  the module requires Go 1.27. The v0.2.0 entry now notes that
+  `omitempty` omits a pointer to `""`. No API change.
+
 ## v0.2.1 (2026-11-28)
 
 - The example names the field at fault instead of printing the decoder's
@@ -17,7 +23,9 @@ change the API; each such change says what callers must do.
 - ReadRequest and Write use `encoding/json/v2`: member names match
   exactly, and duplicate members and invalid UTF-8 are refused. Write no
   longer escapes `<`, `>`, and `&`, and writes nil slices and maps as
-  `[]` and `{}`. Decoding errors read differently.
+  `[]` and `{}`. `omitempty` follows v2: a field is omitted when it
+  encodes as an empty JSON value, so a pointer to `""` is omitted too.
+  Decoding errors read differently.
 
 ## v0.1.1 (2026-11-27)
 

@@ -12,20 +12,25 @@ go get github.com/jacob2161/httpjson
 ## Usage
 
 ```go
-var request struct{ Name string }
+var request struct {
+	Name string `json:"name"`
+}
 if err := httpjson.ReadRequest(req, 1<<20, &request); err != nil {
 	// *http.MaxBytesError, httpjson.ErrEmptyBody, httpjson.ErrSecondValue,
-	// or a *json.SyntaxError / *json.UnmarshalTypeError / unknown field error.
-	http.Error(w, err.Error(), http.StatusBadRequest)
+	// a *jsontext.SyntacticError, or a *json.SemanticError (from
+	// encoding/json/v2), whose JSONPointer names the field at fault.
+	http.Error(w, "invalid request", http.StatusBadRequest)
 	return
 }
 _ = httpjson.Write(w, http.StatusCreated, response)
 ```
 
-- The body is bounded, unknown fields are refused, and the whole body is read: trailing bytes or a
-  second value are an error, not silently ignored.
+- Decoding uses `encoding/json/v2`: names match exactly, so a field needs its tag, and unknown or
+  duplicate fields are refused.
+- The body is bounded, and the whole body is read: trailing bytes or a second value are an error,
+  not silently ignored.
 - A read failure after the value (a body past the limit, a slow client) is reported as itself, not
   as a second value.
 - Mapping errors to your API's error responses is left to you.
 
-Tested on the two newest Go releases. Licensed under the MIT license.
+Requires Go 1.27. Licensed under the MIT license.
