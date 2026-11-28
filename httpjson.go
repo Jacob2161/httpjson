@@ -5,7 +5,8 @@
 package httpjson
 
 import (
-	"encoding/json"
+	json "encoding/json/v2"
+	"encoding/json/jsontext"
 	"errors"
 	"io"
 	"net/http"
@@ -26,17 +27,15 @@ var (
 // checked rather than its first value alone.
 func ReadRequest(req *http.Request, limit int64, target any) error {
 	body := &errorRecorder{reader: http.MaxBytesReader(nil, req.Body, limit)}
-	decoder := json.NewDecoder(body)
-	decoder.DisallowUnknownFields()
-	err := decoder.Decode(target)
+	decoder := jsontext.NewDecoder(body)
+	err := json.UnmarshalDecode(decoder, target, json.RejectUnknownMembers(true))
 	if errors.Is(err, io.EOF) {
 		return ErrEmptyBody
 	}
 	if err != nil {
 		return err
 	}
-	var trailing json.RawMessage
-	err = decoder.Decode(&trailing)
+	_, err = decoder.ReadValue()
 	if errors.Is(err, io.EOF) {
 		return nil
 	}
@@ -47,7 +46,7 @@ func ReadRequest(req *http.Request, limit int64, target any) error {
 	if body.err != nil {
 		return body.err
 	}
-	_, isSyntax := errors.AsType[*json.SyntaxError](err)
+	_, isSyntax := errors.AsType[*jsontext.SyntacticError](err)
 	if err != nil && !isSyntax && !errors.Is(err, io.ErrUnexpectedEOF) {
 		return err
 	}
@@ -71,11 +70,12 @@ func (r *errorRecorder) Read(target []byte) (int, error) {
 
 // Write writes response as a JSON response body with status, or with the
 // status the response writer holds already (200 unless set) when status is
-// 0. response is encoded before anything is sent, so one that cannot be
-// encoded returns its error with the response still unwritten, free for an
-// error response.
+// 0: map keys sorted, nil slices and maps as [] and {}, and a trailing
+// newline. response is encoded before anything is sent, so one that cannot
+// be encoded returns its error with the response still unwritten, free for
+// an error response.
 func Write(w http.ResponseWriter, status int, response any) error {
-	encoded, err := json.Marshal(response)
+	encoded, err := json.Marshal(response, json.Deterministic(true))
 	if err != nil {
 		return err
 	}

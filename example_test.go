@@ -38,5 +38,5 @@ func Example() {
 	}
 	// Output:
 	// 201 {"name":"ada"}
-	// 400 {"error":"json: unknown field \"admin\""}
+	// 400 {"error":"json: cannot unmarshal JSON string into Go httpjson_test.createUser: unknown object member name \"admin\""}
 }

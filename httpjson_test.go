@@ -97,16 +97,17 @@ func isTooLarge(err error) bool {
 	return errors.As(err, &tooLarge)
 }
 
-// TestWriteMatchesTheEncoder checks that Write sends json.Encoder's bytes,
-// with HTML characters escaped, sorted keys, and a trailing newline, the
-// status it is given (200 when it is 0), and application/json.
-func TestWriteMatchesTheEncoder(t *testing.T) {
-	response := map[string]any{"name": "first", "html": "<a&b>", "count": 3}
+// TestWriteSortsKeysAndEndsWithANewline checks that Write sends sorted keys,
+// HTML characters as they are, nil slices as [], and a trailing newline,
+// with the status it is given (200 when it is 0), and application/json.
+func TestWriteSortsKeysAndEndsWithANewline(t *testing.T) {
+	var none []string
+	response := map[string]any{"name": "first", "html": "<a&b>", "count": 3, "tags": none}
 	recorder := httptest.NewRecorder()
 	if err := Write(recorder, http.StatusCreated, response); err != nil {
 		t.Fatal(err)
 	}
-	want := "{\"count\":3,\"html\":\"\\u003ca\\u0026b\\u003e\",\"name\":\"first\"}\n"
+	want := "{\"count\":3,\"html\":\"<a&b>\",\"name\":\"first\",\"tags\":[]}\n"
 	if recorder.Code != http.StatusCreated || recorder.Body.String() != want ||
 		recorder.Header().Get("Content-Type") != "application/json" {
 		t.Fatalf(
